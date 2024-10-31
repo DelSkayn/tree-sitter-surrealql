@@ -1,0 +1,449 @@
+======
+Number
+======
+
+1.2_3e+2dec
+
+---
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (number)))))
+
+
+======
+Knn Operator
+======
+
+1 <|4|> 2
+
+---
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (binary_expression
+          (expression
+            (number))
+          (relation_operator
+            (knn_operator
+              (integer)))
+          (expression
+            (number)))))))
+
+============
+Boolean
+============
+
+true
+
+---
+(query
+  (statement_list
+    (statement
+      (expression
+        (boolean)))))
+
+============
+Ann Operator
+============
+
+1 <|4,2|> 2
+
+---
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (binary_expression
+          (expression
+            (number))
+          (relation_operator
+            (knn_operator
+              (integer)
+              (integer)))
+          (expression
+            (number)))))))
+
+
+=====================
+Knn Operator Distance
+=====================
+
+1 <|4,JACCARD|> 2
+
+---
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (binary_expression
+          (expression
+            (number))
+          (relation_operator
+            (knn_operator
+              (integer)
+              (distance)))
+          (expression
+            (number)))))))
+
+======
+Operator Prec
+======
+
+1 + 2 * 3 + 4
+
+---
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (binary_expression
+          (expression
+            (binary_expression
+              (expression
+                (number))
+              (add_operator)
+              (expression
+                (binary_expression
+                  (expression
+                    (number))
+                  (mull_operator)
+                  (expression
+                    (number))))))
+          (add_operator)
+          (expression
+            (number)))))))
+
+====
+Range Operator
+====
+
+1..2
+
+----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (binary_expression
+          (expression
+            (number))
+          (range_operator)
+          (expression
+            (number)))))))
+
+=====
+Call value
+=====
+
+foo.bar(1, foo)
+
+----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (expression
+          (identifier
+            (raw_identifier)))
+        (dot_operator
+          (identifier
+            (raw_identifier))
+          (call_operator
+            (expression
+              (number))
+            (expression
+              (identifier
+                (raw_identifier)))))))))
+
+
+=====
+Dot operator 
+=====
+
+foo.bar.baz
+
+----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (expression
+          (expression
+            (identifier
+              (raw_identifier)))
+          (dot_operator
+            (identifier
+              (raw_identifier))))
+        (dot_operator
+          (identifier
+            (raw_identifier)))))))
+
+=====
+Destructuring
+=====
+
+foo.{ bar, a: c, b.{faz} }
+
+----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (expression
+          (identifier
+            (raw_identifier)))
+        (dot_operator
+          (destructure_operator
+            (destructure_field
+              (identifier
+                (raw_identifier)))
+            (destructure_field
+              (identifier
+                (raw_identifier))
+              (identifier
+                (raw_identifier)))
+            (destructure_field
+              (identifier
+                (raw_identifier))
+              (dot_operator
+                (destructure_operator
+                  (destructure_field
+                    (identifier
+                      (raw_identifier))))))))))))
+
+====
+Indexing
+====
+
+a[1][where true][? false][*][$]
+
+----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (expression
+          (expression
+            (expression
+              (expression
+                (expression
+                  (identifier
+                    (raw_identifier)))
+                (index_operator
+                  (expression
+                    (number))))
+              (index_operator
+                (expression
+                  (boolean))))
+            (index_operator
+              (expression
+                (boolean))))
+          (index_operator))
+        (index_operator)))))
+
+====
+Large decimal
+====
+
+-79_228_162_514_264_337_593_543_950_335dec
+
+----
+
+    (query
+      (statement_list
+        (statement
+          (expression
+            (number)))))
+
+
+====
+Comment
+====
+
+/* foo */ 
+
+---
+
+    (query
+      (multi_line_comment))
+
+
+====
+Comment
+====
+
+/** foo */ 
+
+---
+
+    (query
+      (doc_multi_line_comment))
+
+====
+Let statement
+====
+
+LET $foo = 1;
+
+----
+
+(query
+  (statement_list
+    (statement
+      (let_statement
+        (param)
+        (expression
+          (number))))))
+
+====
+Let statement
+====
+
+$foo = 1;
+
+----
+
+(query
+  (statement_list
+    (statement
+      (let_statement
+        (param)
+        (expression
+          (number))))))
+
+====
+Select statement
+====
+
+SELECT * FROM foo;
+
+----
+
+(query
+  (statement_list
+    (statement
+      (select_statement
+        (selector)
+        (expression_list
+          (expression
+            (identifier
+              (raw_identifier))))))))
+
+====
+Alter statement
+====
+
+ALTER TABLE test COMMENT 'bla';
+
+----
+
+(query
+  (statement_list
+    (statement
+      (alter_statement
+        (identifier
+          (raw_identifier))
+        (alter_statement_clauses
+          (plain_strand))))))
+
+====
+Closure
+====
+
+|$n: number| $n * 2
+
+----
+    (query
+      (statement_list
+        (statement
+          (expression
+            (closure
+              (argument
+                (param)
+                (kind))
+              (expression
+                (binary_expression
+                  (expression
+                    (param))
+                  (mull_operator)
+                  (expression
+                    (number)))))))))
+
+
+====
+Closure with return
+====
+
+|$n: number| -> number { $n * 2 }
+
+----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (closure
+          (argument
+            (param)
+            (kind))
+          (kind)
+          (block
+            (expression
+              (binary_expression
+                (expression
+                  (param))
+                (mull_operator)
+                (expression
+                  (number))))))))))
+
+====
+Return statement
+====
+
+RETURN 1;
+----
+
+(query
+  (statement_list
+    (statement
+      (return_statement
+        (expression
+          (number))))))
+
+
+====
+Use statement
+====
+
+USE NS test DB test;
+----
+
+(query
+  (statement_list
+    (statement
+      (use_statement
+        (identifier
+          (raw_identifier))
+        (identifier
+          (raw_identifier))))))
+
+
+====
+Duration
+====
+
+1d
+----

@@ -1,25 +1,29 @@
 {
-  "name": "tree-sitter-surrealql",
-  "version": "1.0.0",
-  "description": "",
-  "main": "bindings/node",
-  "scripts": {
-    "build": "tree-sitter generate",
-    "test": "tree-sitter test && ./scripts/test.py",
-    "parse": "tree-sitter parse",
-    "lint": "prettier --check grammar.js",
-    "format": "prettier --write grammar.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "nan": "^2.17.0"
-  },
-  "devDependencies": {
-    "tree-sitter-cli": "^0.20.8"
-  },
-  "tree-sitter": [{
-    "file-types": ["surql"]
-  }]
+    "name": "tree-sitter-surrealql",
+    "version": "1.0.0",
+    "description": "",
+    "main": "bindings/node",
+    "scripts": {
+        "build": "tree-sitter generate",
+        "test": "tree-sitter test",
+        "parse": "tree-sitter parse",
+        "lint": "prettier --check grammar.js",
+        "format": "prettier --write grammar.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "nan": "^2.22.0"
+    },
+    "devDependencies": {
+        "tree-sitter-cli": "^0.20.8"
+    },
+    "tree-sitter": [
+        {
+            "file-types": [
+                "surql"
+            ]
+        }
+    ]
 }
