@@ -9,9 +9,10 @@
 (uuid_strand) @string
 (number) @number
 (integer) @number
+(duration) @number
 (param) @variable.parameter
 
-(kind) @type
+(kind ("LIKEKW" @type))
 
 "(" @punctuation.bracket
 ")" @punctuation.bracket
@@ -20,6 +21,10 @@
 "[" @punctuation.bracket
 "]" @punctuation.bracket
 "|" @punctuation.bracket
+(cast_operator ("<" @punctuation.bracket))
+(cast_operator (">" @punctuation.bracket))
+(kind ("<" @punctuation.bracket))
+(kind (">" @punctuation.bracket))
 
 ";" @punctuation.delimiter
 ":" @punctuation.delimiter
@@ -39,40 +44,9 @@
 (knn_operator) @operator
 (graph_operator_token) @operator
 "**" @operator
+"*" @operator
 "->" @operator
 
 
-[
-"KW_WHERE"
-"KW_AND"
-"KW_OR"
-"KW_IS"
-"KW_IF"
-"KW_LET"
-"KW_SELECT"
-"KW_ONLY"
-"KW_VALUE"
-"KW_AS"
-"KW_THEN"
-"KW_FROM"
-"KW_BEGIN"
-"KW_COMMIT"
-"KW_CANCEL"
-"KW_TRANSACTION"
-"KW_BREAK"
-"KW_CONTINUE"
-"KW_ALTER"
-"KW_TABLE"
-"KW_EXISTS"
-"KW_COMMENT"
-"KW_NONE"
-"KW_DROP"
-"KW_SCHEMALESS"
-"KW_SCHEMAFULL"
-"KW_SCHEMAFUL"
-"KW_CHANGEFEED"
-"KW_INCLUDE"
-"KW_ORIGINAL"
-"KW_OMIT"
-"KW_RETURN"
- ] @keyword
+
+[ "KW" ] @keyword

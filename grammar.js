@@ -12,7 +12,7 @@ const tag = (tag) => {
 
 const kw = (keyword) => {
   if (keyword.toUpperCase() != keyword) {
-    throw new Error("Expected uppercase keyword got ${keyword}");
+    throw new Error(`Expected uppercase keyword got ${keyword}`);
   }
 
   const words = keyword.split(" ");
@@ -173,8 +173,10 @@ const PRECEDENCE = buildPrecedence([
   "NULLISH",
   "UNARY",
   "DOT",
+  "CALL",
   "CLOSURE_RETURN",
   "LET",
+  "STMT",
 ]);
 
 const OR_OPERATOR = ["||", "OR"];
@@ -254,6 +256,8 @@ module.exports = grammar({
         $.cancel_statement,
         $.break_statement,
         $.continue_statement,
+        $.create_statement,
+        $.update_statement,
         $.define_statement,
         $.alter_statement,
         $.return_statement,
@@ -296,8 +300,8 @@ module.exports = grammar({
     select_statement: ($) =>
       seq(
         kw("SELECT"),
-        $.selector,
-        optional(seq(kw("OMIT"), seperatedList1(",", $.idiom))),
+        field("selector", $.selector),
+        optional(seq(kw("OMIT"), field("omit", seperatedList1(",", $.idiom)))),
         kw("FROM"),
         optional(kw("ONLY")),
         $.expression_list,
@@ -375,6 +379,30 @@ module.exports = grammar({
     for_statement: ($) =>
       seq(kw("FOR"), $.param, kw("IN"), $.expression, $.block),
 
+    create_statement: ($) =>
+      seq(
+        kw("CREATE"),
+        optional(kw("ONLY")),
+        $.expression_list,
+        optional($._data_clause),
+        optional($._output_clause),
+        optional($._version_clause),
+        optional($._timeout_clause),
+        optional(kw("PARALLEL")),
+      ),
+
+    update_statement: ($) =>
+      seq(
+        kw("UPDATE"),
+        optional(kw("ONLY")),
+        $.expression_list,
+        optional($._data_clause),
+        optional($._condition_clause),
+        optional($._output_clause),
+        optional($._timeout_clause),
+        optional(kw("PARALLEL")),
+      ),
+
     define_statement: ($) =>
       seq(
         kw("DEFINE"),
@@ -390,6 +418,47 @@ module.exports = grammar({
             repeat($._comment_clause),
           ),
           $.define_table_statement,
+          $.define_function_statement,
+        ),
+      ),
+
+    define_function_statement: ($) =>
+      seq(
+        kw("FUNCTION"),
+        optional($._if_not_exists_clause),
+        $.defined_function_name,
+        "(",
+        trailingList0(",", seq($.param, ":", $.kind)),
+        ")",
+        optional(seq("->", $.kind)),
+        $.block,
+        repeat(choice($._comment_clause, $._simple_permissions_clause)),
+      ),
+
+    define_user_statement: ($) =>
+      seq(
+        kw("USER"),
+        optional($._if_not_exists_clause),
+        $.identifier,
+        kw("ON"),
+        $.base,
+        repeat(
+          choice(
+            $._comment_clause,
+            seq(kw("PASSWORD"), $.plain_strand),
+            seq(kw("PASSHASH"), $.plain_strand),
+            seq(kw("ROLES"), seperatedList1(",", $.identifier)),
+            seq(
+              kw("DURATION"),
+              repeat(
+                seq(
+                  kw("FOR"),
+                  choice(kw("TOKEN"), kw("SESSION")),
+                  choice(kw("NONE"), $.duration),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
 
@@ -412,6 +481,31 @@ module.exports = grammar({
     _database_kw: ($) => choice(kw("DATABASE"), kw("DB")),
     _table_kw: ($) => choice(kw("TABLE"), kw("TB")),
 
+    _data_clause: ($) =>
+      choice(
+        seq(
+          kw("SET"),
+          seperatedList1(",", seq($.idiom, $.assign_operator, $.expression)),
+        ),
+        seq(kw("UNSET"), seperatedList1(",", $.idiom)),
+        seq(kw("PATCH"), seperatedList1(",", $.expression)),
+        seq(kw("MERGE"), seperatedList1(",", $.expression)),
+        seq(kw("REPLACE"), seperatedList1(",", $.expression)),
+        seq(kw("CONTENT"), seperatedList1(",", $.expression)),
+      ),
+    _output_clause: ($) =>
+      choice(
+        prec(PRECEDENCE.STMT,kw("NONE")),
+        prec(PRECEDENCE.STMT,kw("NULL")),
+        kw("DIFF"),
+        kw("AFTER"),
+        kw("BEFORE"),
+        $.selector,
+      ),
+    _timeout_clause: ($) => seq(kw("TIMEOUT"), $.duration),
+    _version_clause: ($) => seq(kw("VERSION"), $.datetime_strand),
+    _condition_clause: ($) => seq(kw("WHERE"), $.expression),
+
     _if_not_exists_clause: ($) =>
       choice(seq(kw("IF"), kw("NOT"), kw("EXISTS")), kw("OVERWRITE")),
     _comment_clause: ($) =>
@@ -422,6 +516,15 @@ module.exports = grammar({
       seq(kw("CHANGEFEED"), choice(kw("NONE"), $._changefeed_clause_tail)),
     _changefeed_clause_tail: ($) =>
       seq($.duration, optional(seq(kw("INCLUDE"), kw("ORIGINAL")))),
+    _simple_permissions_clause: ($) =>
+      seq(
+        kw("PERMISSIONS"),
+        choice(kw("NONE"), kw("FULL"), seq(kw("WHERE"), $.expression)),
+      ),
+
+    defined_function_name: ($) =>
+      seq(likeKw("FN"), "::", seperatedList1("::", $.identifier)),
+    builtin_function_name: ($) => seperatedList1("::", $.identifier),
 
     base: ($) =>
       choice(kw("ROOT"), kw("NAMESPACE"), kw("NS"), kw("DATABASE"), kw("DB")),
@@ -499,7 +602,7 @@ module.exports = grammar({
       ),
 
     literal_object_kind: ($) =>
-      seq("{", trailingList0(",", seq($._object_key, ":", $.kind)), "}"),
+      seq("{", trailingList0(",", seq($.object_key, ":", $.kind)), "}"),
 
     literal_array_kind: ($) => seq("[", trailingList0(",", $.kind), "]"),
 
@@ -570,26 +673,54 @@ module.exports = grammar({
         $.null,
         $.none,
         $.strand_like,
-        $.identifier,
+        $._path_like,
         $.param,
+        $.record_id,
         seq("(", $.covered_expression, ")"),
       ),
 
-    covered_expression: ($) => choice($.expression, $.if_statement),
+    _path_like: ($) =>
+      choice($.defined_function, $.builtin_function, $.builtin_constant),
+
+    defined_function: ($) =>
+      seq(
+        likeKw("FN"),
+        "::",
+        seperatedList1("::", $.identifier),
+        $.call_operator,
+      ),
+    builtin_function: ($) =>
+      choice(
+        seq($._identifier_path, $.call_operator),
+        seq($.identifier, $.call_operator),
+      ),
+    builtin_constant: ($) => prec.left($._identifier_path),
+
+    _identifier_path: ($) =>
+      seq($.identifier, "::", seperatedList1("::", $.identifier)),
+
+    covered_expression: ($) =>
+      choice(
+        $.expression,
+        $.if_statement,
+        $.select_statement,
+        $.create_statement,
+        $.update_statement,
+      ),
 
     cast_operator: ($) => seq("<", $.kind, ">"),
 
     idiom: ($) =>
-      seq(
+      prec.left(seq(
         optional($.prefix_operator),
         $.identifier,
         repeat(choice($.dot_operator, $.index_operator)),
-      ),
+      )),
 
     graph_operator: ($) => seq($.graph_operator_token, $.identifier),
 
     dot_operator: ($) =>
-      seq(
+      prec.left(seq(
         ".",
         choice(
           seq($.identifier, $.call_operator),
@@ -597,7 +728,7 @@ module.exports = grammar({
           $.identifier,
           "*",
         ),
-      ),
+      )),
 
     index_operator: ($) =>
       seq(
@@ -629,9 +760,9 @@ module.exports = grammar({
 
     range_operator: ($) => choice(">..", "..", "..=", ">..="),
     prefix_operator: ($) => choice("-", "+", "!", $.graph_operator_token),
-    or_operator: ($) => choice("||", kw("OR")),
-    and_operator: ($) => choice("&&", kw("AND")),
-    eq_operator: ($) => choice(...EQ_OPERATOR, kw("IS")),
+    or_operator: ($) => choice("||", likeKw("OR")),
+    and_operator: ($) => choice("&&", likeKw("AND")),
+    eq_operator: ($) => choice(...EQ_OPERATOR, likeKw("IS")),
     add_operator: ($) => choice("+", "-"),
     mull_operator: ($) => choice("*", "/", "×", "÷", "%"),
     relation_operator: ($) =>
@@ -649,6 +780,8 @@ module.exports = grammar({
       ),
 
     prefix_operator: ($) => choice("..", "..=", "<-", "<->", "->"),
+
+    assign_operator: ($) => choice("=", "+=", "-=", "+?="),
 
     closure: ($) =>
       seq(
@@ -670,7 +803,7 @@ module.exports = grammar({
 
     graph_operator_token: ($) => choice("<-", "<->", "->"),
 
-    argument: ($) => seq($.param, ":", $.kind),
+    argument: ($) => seq($.param, optional(seq(":", $.kind))),
 
     distance: ($) => choice(...DISTANCE_KEYWORDS.map(kw)),
 
@@ -690,14 +823,28 @@ module.exports = grammar({
         $.for_statement,
         $.break_statement,
         $.continue_statement,
+        $.create_statement,
+        $.update_statement,
         $.return_statement,
         $.expression,
       ),
 
+    record_id: ($) => seq($.identifier, ":", $.record_id_key),
+
+    record_id_key: ($) =>
+      choice(
+        $.integer,
+        $.uuid_strand,
+        $.array_literal,
+        $.object_literal,
+        $.flexible_identifier,
+      ),
+
     array_literal: ($) => seq("[", trailingList0(",", $.expression), "]"),
-    object_literal: ($) => seq("{", trailingList0(",", $.object_field), "}"),
-    object_field: ($) => seq($._object_key, ":", $.expression),
-    _object_key: ($) => choice($.identifier, $.plain_strand, $.number),
+    object_literal: ($) => seq("{", trailingList0(",", $._object_field), "}"),
+    _object_field: ($) =>
+      seq(field("key", $.object_key), ":", field("value", $.expression)),
+    object_key: ($) => choice($.identifier, $.plain_strand, $.number),
 
     duration: ($) => DURATION,
     null: ($) => likeKw("NULL"),
@@ -749,6 +896,8 @@ module.exports = grammar({
 
     identifier: ($) =>
       choice($.raw_identifier, $.bracket_identifier, $.backtick_identifier),
+    flexible_identifier: ($) =>
+      choice(/[a-zA-Z0-9_]+/, $.bracket_identifier, $.backtick_identifier),
     raw_identifier: ($) => IDENTIFIER,
 
     bracket_identifier: ($) =>

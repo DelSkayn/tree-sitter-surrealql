@@ -86,6 +86,11 @@
     }
   },
   {
+    "type": "assign_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "base",
     "named": true,
     "fields": {}
@@ -155,6 +160,10 @@
           "named": true
         },
         {
+          "type": "create_statement",
+          "named": true
+        },
+        {
           "type": "expression",
           "named": true
         },
@@ -177,6 +186,10 @@
         {
           "type": "select_statement",
           "named": true
+        },
+        {
+          "type": "update_statement",
+          "named": true
         }
       ]
     }
@@ -190,6 +203,40 @@
     "type": "break_statement",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "builtin_constant",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "builtin_function",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "call_operator",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "call_operator",
@@ -272,11 +319,62 @@
       "required": true,
       "types": [
         {
+          "type": "create_statement",
+          "named": true
+        },
+        {
           "type": "expression",
           "named": true
         },
         {
           "type": "if_statement",
+          "named": true
+        },
+        {
+          "type": "select_statement",
+          "named": true
+        },
+        {
+          "type": "update_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "create_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assign_operator",
+          "named": true
+        },
+        {
+          "type": "datetime_strand",
+          "named": true
+        },
+        {
+          "type": "duration",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "expression_list",
+          "named": true
+        },
+        {
+          "type": "idiom",
+          "named": true
+        },
+        {
+          "type": "selector",
           "named": true
         }
       ]
@@ -288,6 +386,41 @@
     "fields": {}
   },
   {
+    "type": "define_function_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "block",
+          "named": true
+        },
+        {
+          "type": "defined_function_name",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "kind",
+          "named": true
+        },
+        {
+          "type": "param",
+          "named": true
+        },
+        {
+          "type": "plain_strand",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "define_statement",
     "named": true,
     "fields": {},
@@ -295,6 +428,10 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "define_function_statement",
+          "named": true
+        },
         {
           "type": "define_table_statement",
           "named": true
@@ -324,6 +461,40 @@
         },
         {
           "type": "plain_strand",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "defined_function",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "call_operator",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "defined_function_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
           "named": true
         }
       ]
@@ -417,11 +588,23 @@
           "named": true
         },
         {
+          "type": "builtin_constant",
+          "named": true
+        },
+        {
+          "type": "builtin_function",
+          "named": true
+        },
+        {
           "type": "closure",
           "named": true
         },
         {
           "type": "covered_expression",
+          "named": true
+        },
+        {
+          "type": "defined_function",
           "named": true
         },
         {
@@ -438,10 +621,6 @@
         },
         {
           "type": "graph_operator",
-          "named": true
-        },
-        {
-          "type": "identifier",
           "named": true
         },
         {
@@ -473,6 +652,10 @@
           "named": true
         },
         {
+          "type": "record_id",
+          "named": true
+        },
+        {
           "type": "strand_like",
           "named": true
         },
@@ -493,6 +676,25 @@
       "types": [
         {
           "type": "expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "flexible_identifier",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "backtick_identifier",
+          "named": true
+        },
+        {
+          "type": "bracket_identifier",
           "named": true
         }
       ]
@@ -753,19 +955,11 @@
       "required": false,
       "types": [
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
           "type": "kind",
           "named": true
         },
         {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "plain_strand",
+          "type": "object_key",
           "named": true
         }
       ]
@@ -787,17 +981,13 @@
     "fields": {}
   },
   {
-    "type": "object_field",
+    "type": "object_key",
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
-        {
-          "type": "expression",
-          "named": true
-        },
         {
           "type": "identifier",
           "named": true
@@ -816,16 +1006,27 @@
   {
     "type": "object_literal",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "object_field",
-          "named": true
-        }
-      ]
+    "fields": {
+      "key": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "object_key",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -867,6 +1068,56 @@
     "type": "range_operator",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "record_id",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "record_id_key",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "record_id_key",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "array_literal",
+          "named": true
+        },
+        {
+          "type": "flexible_identifier",
+          "named": true
+        },
+        {
+          "type": "integer",
+          "named": true
+        },
+        {
+          "type": "object_literal",
+          "named": true
+        },
+        {
+          "type": "uuid_strand",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "record_strand",
@@ -914,7 +1165,32 @@
   {
     "type": "select_statement",
     "named": true,
-    "fields": {},
+    "fields": {
+      "omit": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ",",
+            "named": false
+          },
+          {
+            "type": "idiom",
+            "named": true
+          }
+        ]
+      },
+      "selector": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "selector",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
       "required": true,
@@ -933,14 +1209,6 @@
         },
         {
           "type": "expression_list",
-          "named": true
-        },
-        {
-          "type": "idiom",
-          "named": true
-        },
-        {
-          "type": "selector",
           "named": true
         }
       ]
@@ -998,6 +1266,10 @@
           "named": true
         },
         {
+          "type": "create_statement",
+          "named": true
+        },
+        {
           "type": "define_statement",
           "named": true
         },
@@ -1023,6 +1295,10 @@
         },
         {
           "type": "select_statement",
+          "named": true
+        },
+        {
+          "type": "update_statement",
           "named": true
         },
         {
@@ -1092,6 +1368,41 @@
         },
         {
           "type": "prefix_operator",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "update_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assign_operator",
+          "named": true
+        },
+        {
+          "type": "duration",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "expression_list",
+          "named": true
+        },
+        {
+          "type": "idiom",
+          "named": true
+        },
+        {
+          "type": "selector",
           "named": true
         }
       ]
@@ -1174,11 +1485,23 @@
     "named": false
   },
   {
+    "type": "+=",
+    "named": false
+  },
+  {
+    "type": "+?=",
+    "named": false
+  },
+  {
     "type": ",",
     "named": false
   },
   {
     "type": "-",
+    "named": false
+  },
+  {
+    "type": "-=",
     "named": false
   },
   {
@@ -1207,6 +1530,10 @@
   },
   {
     "type": ":",
+    "named": false
+  },
+  {
+    "type": "::",
     "named": false
   },
   {

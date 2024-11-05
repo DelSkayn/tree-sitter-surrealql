@@ -447,3 +447,9 @@ Duration
 
 1d
 ----
+
+(query
+  (statement_list
+    (statement
+      (expression
+        (duration)))))
